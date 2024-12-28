@@ -29,8 +29,25 @@ const User = sequelize.define('User', {
         type: DataTypes.STRING,
         allowNull: false,
     },
+    place: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
+    age: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+    },
+    gender: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
+    interested: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
 });
 
+// Sync the database, ensuring all models are properly initialized
 sequelize.sync()
     .then(() => {
         console.log('Database synced');
@@ -39,29 +56,53 @@ sequelize.sync()
         console.error('Error syncing database:', error);
     });
 
+// Sign up route to create a new user
 app.post('/signup', async (req, res) => {
-    const { username, email, password } = req.body;
+    const { username, email, password, place, age, gender, interested } = req.body;
 
-    if (!username || !email || !password) {
+    // Validate all required fields
+    if (!username || !email || !password || !place || !age || !gender || !interested) {
         return res.status(400).json({ message: 'All fields are required' });
     }
 
     try {
+        // Check if the user already exists by email
         const userExists = await User.findOne({ where: { email } });
 
         if (userExists) {
             return res.status(400).json({ message: 'User already exists' });
         }
 
-        const newUser = await User.create({ username, email, password });
+        // Create a new user in the database
+        const newUser = await User.create({
+            username,
+            email,
+            password,
+            place,
+            age,
+            gender,
+            interested,
+        });
 
-        return res.status(201).json({ message: 'User created successfully', user: newUser });
+        // Respond with success message
+        return res.status(201).json({
+            message: 'User created successfully',
+            user: {
+                username: newUser.username,
+                email: newUser.email,
+                place: newUser.place,
+                age: newUser.age,
+                gender: newUser.gender,
+                interested: newUser.interested,
+            },
+        });
     } catch (error) {
         console.error('Error creating user:', error);
         return res.status(500).json({ message: 'Server error' });
     }
 });
 
+// Start the server
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
