@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const { Sequelize, DataTypes } = require('sequelize');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const expressJwt = require('express-jwt');  // JWT middleware
+const expressJwt = require('express-jwt'); 
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -11,17 +11,14 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(bodyParser.json());
 
-// JWT secret key (ensure you store this securely in production)
 const JWT_SECRET = 'your_jwt_secret_key';
 
-// Database setup (example using Sequelize)
 const sequelize = new Sequelize('user_db', 'your_username', 'your_password', {
     host: 'localhost',
     dialect: 'postgres',
     logging: false,
 });
 
-// Define the User model (extend with more fields if needed)
 const User = sequelize.define('User', {
     username: {
         type: DataTypes.STRING,
@@ -69,7 +66,6 @@ const authenticateJWT = expressJwt({
     algorithms: ['HS256'],
 });
 
-// Example login route to generate a JWT (for testing purposes)
 app.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
@@ -89,12 +85,11 @@ app.post('/login', async (req, res) => {
     }
 });
 
-// Profile route - protected
 app.get('/profile', authenticateJWT, async (req, res) => {
     try {
-        const userId = req.user.id; // Extract user ID from JWT payload
+        const userId = req.user.id; 
 
-        const user = await User.findByPk(userId); // Fetch user by ID
+        const user = await User.findByPk(userId); 
 
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
@@ -108,7 +103,7 @@ app.get('/profile', authenticateJWT, async (req, res) => {
                 age: user.age,
                 gender: user.gender,
                 interested: user.interested,
-                profileImage: user.profileImage || "default_image_url_here.jpg", // If you want to add a profile image field
+                profileImage: user.profileImage || "default_image_url_here.jpg", 
             },
         });
     } catch (error) {
@@ -117,7 +112,6 @@ app.get('/profile', authenticateJWT, async (req, res) => {
     }
 });
 
-// Start the server
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
