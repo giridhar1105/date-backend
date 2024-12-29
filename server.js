@@ -1,5 +1,5 @@
 const express = require('express');
-const http = require('http');
+const http = require('p');
 const { Server } = require('socket.io');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
