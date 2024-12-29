@@ -2,37 +2,32 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const cors = require('cors');
-const { User } = require('./models'); // Assuming you have your User model from the signup
+const { User } = require('./models'); 
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'; // Use environment variable in production
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'; 
 
-// Login route
 app.post('/login', async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        // Validate input
         if (!email || !password) {
             return res.status(400).json({ message: 'Email and password are required' });
         }
 
-        // Find user by email
         const user = await User.findOne({ where: { email } });
         if (!user) {
             return res.status(401).json({ message: 'Invalid email or password' });
         }
 
-        // Compare password
         const isValidPassword = await bcrypt.compare(password, user.password);
         if (!isValidPassword) {
             return res.status(401).json({ message: 'Invalid email or password' });
         }
 
-        // Generate JWT token
         const token = jwt.sign(
             { 
                 id: user.id,
@@ -43,13 +38,11 @@ app.post('/login', async (req, res) => {
             { expiresIn: '24h' }
         );
 
-        // Update user's online status
         await User.update(
             { isOnline: true },
             { where: { id: user.id } }
         );
 
-        // Send response
         res.json({
             message: 'Login successful',
             token,
@@ -70,7 +63,6 @@ app.post('/login', async (req, res) => {
     }
 });
 
-// Middleware to verify JWT token
 const authenticateToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
@@ -88,12 +80,10 @@ const authenticateToken = (req, res, next) => {
     });
 };
 
-// Protected route example
 app.get('/protected', authenticateToken, (req, res) => {
     res.json({ message: 'Access granted', user: req.user });
 });
 
-// Logout route
 app.post('/logout', authenticateToken, async (req, res) => {
     try {
         await User.update(

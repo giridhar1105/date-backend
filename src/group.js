@@ -16,14 +16,12 @@ const io = new Server(server, {
 app.use(cors());
 app.use(express.json());
 
-// Database configuration
 const sequelize = new Sequelize('user_db', 'your_username', 'your_password', {
     host: 'localhost',
     dialect: 'postgres',
     logging: false
 });
 
-// Message model
 const Message = sequelize.define('Message', {
     id: {
         type: DataTypes.INTEGER,
