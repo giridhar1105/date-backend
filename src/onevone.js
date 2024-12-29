@@ -16,14 +16,12 @@ const io = new Server(server, {
 app.use(cors());
 app.use(express.json());
 
-// Database configuration
 const sequelize = new Sequelize('user_db', 'your_username', 'your_password', {
     host: 'localhost',
     dialect: 'postgres',
     logging: false
 });
 
-// Private Message model
 const PrivateMessage = sequelize.define('PrivateMessage', {
     id: {
         type: DataTypes.INTEGER,
@@ -48,7 +46,6 @@ const PrivateMessage = sequelize.define('PrivateMessage', {
     }
 });
 
-// Add online status to User model
 const User = sequelize.define('User', {
     username: {
         type: DataTypes.STRING,
@@ -89,15 +86,12 @@ const User = sequelize.define('User', {
     }
 });
 
-// Sync database
 sequelize.sync()
     .then(() => console.log('Database synced'))
     .catch(err => console.error('Error syncing database:', err));
 
-// Store connected users
 const connectedUsers = new Map();
 
-// Get all users
 app.get('/users', async (req, res) => {
     try {
         const users = await User.findAll({
@@ -109,7 +103,6 @@ app.get('/users', async (req, res) => {
     }
 });
 
-// Get chat history
 app.get('/messages/:senderId/:receiverId', async (req, res) => {
     try {
         const { senderId, receiverId } = req.params;
@@ -131,11 +124,9 @@ app.get('/messages/:senderId/:receiverId', async (req, res) => {
 io.on('connection', (socket) => {
     console.log('User connected:', socket.id);
 
-    // Handle user login
     socket.on('user-login', async (userId) => {
         connectedUsers.set(socket.id, userId);
         
-        // Update user status in database
         try {
             await User.update(
                 { isOnline: true },
@@ -147,7 +138,6 @@ io.on('connection', (socket) => {
         }
     });
 
-    // Handle private messages
     socket.on('private-message', async (data) => {
         try {
             const message = await PrivateMessage.create({
@@ -156,7 +146,6 @@ io.on('connection', (socket) => {
                 text: data.text
             });
 
-            // Send to both sender and receiver
             const receiverSocket = Array.from(connectedUsers.entries())
                 .find(([, id]) => id === data.receiverId)?.[0];
 
@@ -170,7 +159,6 @@ io.on('connection', (socket) => {
         }
     });
 
-    // Handle disconnection
     socket.on('disconnect', async () => {
         const userId = connectedUsers.get(socket.id);
         if (userId) {
