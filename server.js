@@ -17,23 +17,19 @@ const io = new Server(server, {
   }
 });
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 app.use(bodyParser.json());
 
-// Constants
 const PORT = process.env.PORT || 5000;
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
-// Database configuration
 const sequelize = new Sequelize('user_db', 'your_username', 'your_password', {
   host: 'localhost',
   dialect: 'postgres',
   logging: false
 });
 
-// Define Models
 const User = sequelize.define('User', {
   username: {
     type: DataTypes.STRING,
@@ -123,12 +119,10 @@ const PrivateMessage = sequelize.define('PrivateMessage', {
   }
 });
 
-// Sync database
 sequelize.sync()
   .then(() => console.log('Database synced'))
   .catch(err => console.error('Error syncing database:', err));
 
-// Authentication Middleware
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
@@ -146,7 +140,6 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
-// Socket.io connection handling
 const connectedUsers = new Map();
 
 io.on('connection', (socket) => {
@@ -232,8 +225,6 @@ io.on('connection', (socket) => {
   });
 });
 
-// Routes
-// Gemini API route
 app.post('/gemini-1.5-flash', async (req, res) => {
   const { input, timestamp } = req.body;
   const Prompt = "talk friendly.";
@@ -255,7 +246,6 @@ app.post('/gemini-1.5-flash', async (req, res) => {
   }
 });
 
-// Authentication routes
 app.post('/signup', async (req, res) => {
   const { username, email, password, place, age, gender, interested } = req.body;
 
@@ -351,7 +341,6 @@ app.post('/login', async (req, res) => {
   }
 });
 
-// Helper Functions
 async function processWithGemini(Prompt, input) {
   try {
     const response = await axios({
@@ -370,7 +359,6 @@ async function processWithGemini(Prompt, input) {
   }
 }
 
-// Start server
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
