@@ -49,22 +49,18 @@ const Message = sequelize.define('Message', {
     }
 });
 
-// Sync database
 sequelize.sync()
     .then(() => console.log('Database synced'))
     .catch(err => console.error('Error syncing database:', err));
 
-// Store connected users
 const connectedUsers = new Map();
 
 io.on('connection', (socket) => {
     console.log('User connected:', socket.id);
 
-    // Handle user joining
     socket.on('join', async (userData) => {
         connectedUsers.set(socket.id, userData);
         
-        // Fetch last 50 messages
         try {
             const messages = await Message.findAll({
                 limit: 50,
@@ -75,14 +71,12 @@ io.on('connection', (socket) => {
             console.error('Error fetching messages:', error);
         }
 
-        // Broadcast user joined message
         io.emit('user-joined', {
             systemMessage: `${userData.username} joined the chat`,
             onlineCount: connectedUsers.size
         });
     });
 
-    // Handle new messages
     socket.on('send-message', async (messageData) => {
         try {
             const newMessage = await Message.create({
@@ -99,7 +93,6 @@ io.on('connection', (socket) => {
         }
     });
 
-    // Handle disconnection
     socket.on('disconnect', () => {
         const userData = connectedUsers.get(socket.id);
         if (userData) {
