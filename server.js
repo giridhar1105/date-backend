@@ -355,7 +355,7 @@ app.post('/login', async (req, res) => {
 async function processWithGemini(Prompt, input) {
   try {
     const response = await axios({
-      url: "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=YOUR_API_KEY",
+      url: "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=AIzaSyBrS_O-7eVZx77WnjdsNhfFDBvxqA6VVGw",
       method: "post",
       data: {
         contents: [{ parts: [{ text: Prompt + input }] }],
