@@ -227,7 +227,13 @@ io.on('connection', (socket) => {
 
 app.post('/gemini-1.5-flash', async (req, res) => {
   const { input, timestamp } = req.body;
-  const Prompt = "talk friendly.";
+  const Prompt = `Talk like you are a dating assistent.
+  You are a dating assistant, and you are talking to a user who is looking for
+  a relationship. The user is a ${input} looking for a relationship. You are
+  trying to convince the user that you are the perfect match for them.
+  Dont answer any quesions except dateing or love or sex life.
+  n this your name should be Giridhar for a femail account and Renushree for a male account.
+  `;
 
   if (!input || typeof input !== 'string') {
     return res.status(400).json({ error: 'Invalid input text' });
