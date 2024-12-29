@@ -6,7 +6,7 @@ const router = express.Router();
 const pool = new Pool({
     user: 'your_username',
     host: 'localhost',
-    database: 'your_database',
+    database: ' db_name',
     password: 'your_password',
     port: 5432,
 });
