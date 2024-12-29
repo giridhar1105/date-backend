@@ -3,7 +3,6 @@ const express = require('express');
 
 const router = express.Router();
 
-// PostgreSQL connection configuration
 const pool = new Pool({
     user: 'your_username',
     host: 'localhost',
@@ -12,7 +11,6 @@ const pool = new Pool({
     port: 5432,
 });
 
-// Create feedback table if it doesn't exist
 const createTable = async () => {
     const createTableQuery = `
         CREATE TABLE IF NOT EXISTS feedback (
@@ -33,7 +31,6 @@ const createTable = async () => {
 
 createTable();
 
-// POST endpoint to save feedback
 router.post('/api/feedback', async (req, res) => {
     const { rating, feedback } = req.body;
 
@@ -56,7 +53,6 @@ router.post('/api/feedback', async (req, res) => {
     }
 });
 
-// GET endpoint to retrieve all feedback
 router.get('/api/feedback', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM feedback ORDER BY created_at DESC');
