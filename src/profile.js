@@ -51,7 +51,6 @@ const User = sequelize.define('User', {
     },
 });
 
-// Sync the database
 sequelize.sync()
     .then(() => {
         console.log('Database synced');
@@ -60,7 +59,6 @@ sequelize.sync()
         console.error('Error syncing database:', error);
     });
 
-// JWT authentication middleware
 const authenticateJWT = expressJwt({
     secret: JWT_SECRET,
     algorithms: ['HS256'],
