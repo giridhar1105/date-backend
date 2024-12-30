@@ -21,8 +21,8 @@ app.use(cors());
 app.use(express.json());
 app.use(bodyParser.json());
 
-const PORT = process.env.PORT || 5000;
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+const PORT = 5000;
+const JWT_SECRET = your-secret-key;
 
 const sequelize = new Sequelize('user_db', 'your_username', 'your_password', {
   host: 'localhost',
@@ -31,7 +31,7 @@ const sequelize = new Sequelize('user_db', 'your_username', 'your_password', {
 });
 
 const User = sequelize.define('User', {
-  username: {
+  username: { 
     type: DataTypes.STRING,
     allowNull: false,
   },
@@ -232,7 +232,7 @@ app.post('/gemini-1.5-flash', async (req, res) => {
   a relationship. The user is a ${input} looking for a relationship. You are
   trying to convince the user that you are the perfect match for them.
   Dont answer any quesions except dateing or love or sex life.
-  n this your name should be Giridhar for a femail account and Renushree for a male account.
+  And your name should be Giridhar for a female account and Renushree for a male account.
   `;
 
   if (!input || typeof input !== 'string') {
@@ -368,3 +368,5 @@ async function processWithGemini(Prompt, input) {
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
+// DATABASE_URL=postgresql://postgres:[YOUR-PASSWORD]@db.lhheaajhvhtjjcciwzmu.supabase.co:5432/postgres
