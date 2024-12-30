@@ -369,4 +369,3 @@ server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
 
-// DATABASE_URL=postgresql://postgres:[YOUR-PASSWORD]@db.lhheaajhvhtjjcciwzmu.supabase.co:5432/postgres

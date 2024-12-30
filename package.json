@@ -6,17 +6,21 @@
     },
     "dependencies": {
         "@sequelize/postgres": "^7.0.0-alpha.43",
-        "axios": "^1.7.8",
+        "axios": "^1.7.9",
         "bcrypt": "^5.1.1",
+        "body-parser": "^1.20.3",
         "cors": "^2.8.5",
         "dotenv": "^16.4.5",
-        "express": "^4.21.1",
+        "express": "^4.21.2",
+        "http": "^0.0.1-security",
+        "jwt-simple": "^0.5.6",
         "nodemon": "^3.1.7",
         "openssl": "^2.0.0",
         "pg": "^8.13.1",
         "pg-hstore": "^2.3.4",
         "postgres": "^3.4.5",
         "psql": "^0.0.1",
-        "sequelize": "^6.37.5"
+        "sequelize": "^6.37.5",
+        "socket.io": "^4.8.1"
     }
 }
