@@ -12,7 +12,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:3002",
+    origin: "http://localhost:5000",
     methods: ["GET", "POST"]
   }
 });
@@ -21,14 +21,15 @@ app.use(cors());
 app.use(express.json());
 app.use(bodyParser.json());
 
-const PORT = 5000;
-const JWT_SECRET = your-secret-key;
+const PORT = 5432;
+const JWT_SECRET = 'your-secret-key';
 
-const sequelize = new Sequelize('user_db', 'your_username', 'your_password', {
-  host: 'localhost',
+const sequelize = new Sequelize('Date', 'Giridhar', 'giridhar1105', {
+  host: '127.0.0.1',
   dialect: 'postgres',
   logging: false
 });
+
 
 const User = sequelize.define('User', {
   username: { 
