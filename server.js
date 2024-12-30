@@ -30,7 +30,7 @@ const sequelize = new Sequelize('Date', 'Giridhar', 'giridhar1105', {
   logging: false
 });
 
-
+// User Model
 const User = sequelize.define('User', {
   username: { 
     type: DataTypes.STRING,
@@ -71,6 +71,7 @@ const User = sequelize.define('User', {
   }
 });
 
+// Message Model
 const Message = sequelize.define('Message', {
   id: {
     type: DataTypes.INTEGER,
@@ -96,6 +97,7 @@ const Message = sequelize.define('Message', {
   }
 });
 
+// Private Message Model
 const PrivateMessage = sequelize.define('PrivateMessage', {
   id: {
     type: DataTypes.INTEGER,
@@ -124,6 +126,7 @@ sequelize.sync()
   .then(() => console.log('Database synced'))
   .catch(err => console.error('Error syncing database:', err));
 
+// Authentication middleware
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
@@ -141,6 +144,7 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
+// WebSocket handling
 const connectedUsers = new Map();
 
 io.on('connection', (socket) => {
@@ -226,6 +230,7 @@ io.on('connection', (socket) => {
   });
 });
 
+// REST API endpoints
 app.post('/gemini-1.5-flash', async (req, res) => {
   const { input, timestamp } = req.body;
   const Prompt = `Talk like you are a dating assistent.
@@ -369,4 +374,3 @@ async function processWithGemini(Prompt, input) {
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
-
