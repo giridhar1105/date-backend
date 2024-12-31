@@ -6,6 +6,7 @@
     },
     "dependencies": {
         "@sequelize/postgres": "^7.0.0-alpha.43",
+        "@supabase/supabase-js": "github:supabase/supabase-js",
         "axios": "^1.7.9",
         "bcrypt": "^5.1.1",
         "body-parser": "^1.20.3",
@@ -23,4 +24,5 @@
         "sequelize": "^6.37.5",
         "socket.io": "^4.8.1"
     }
+    
 }
