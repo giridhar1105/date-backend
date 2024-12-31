@@ -21,14 +21,25 @@ app.use(cors());
 app.use(express.json());
 app.use(bodyParser.json());
 
-const PORT = 5432;
+const PORT = 5000;
 const JWT_SECRET = 'your-secret-key';
 
-const sequelize = new Sequelize('Date', 'Giridhar', 'giridhar1105', {
-  host: '127.0.0.1',
+// Connect to PostgreSQL using the provided URL
+const sequelize = new Sequelize('postgresql://giridhar:giridhar1105@localhost:5432/Date', {
   dialect: 'postgres',
-  logging: false
+  logging: false, // You can enable this to see SQL queries in the console
 });
+
+
+// // Sequelize instance setup
+// const sequelize = new Sequelize('Date', 'Giridhar', 'giridhar1105', {
+//   host: 'localhost',       // PostgreSQL server address (localhost)
+//   dialect: 'postgres',     // Database dialect (PostgreSQL)
+//   logging: false,          // Disable query logging (set to `true` for debugging)
+// });
+
+
+
 
 // User Model
 const User = sequelize.define('User', {
@@ -233,7 +244,7 @@ io.on('connection', (socket) => {
 // REST API endpoints
 app.post('/gemini-1.5-flash', async (req, res) => {
   const { input, timestamp } = req.body;
-  const Prompt = `Talk like you are a dating assistent.
+  const Prompt = `Talk like you are a dating assistant.
   You are a dating assistant, and you are talking to a user who is looking for
   a relationship. The user is a ${input} looking for a relationship. You are
   trying to convince the user that you are the perfect match for them.
@@ -359,7 +370,7 @@ async function processWithGemini(Prompt, input) {
       url: "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=AIzaSyBrS_O-7eVZx77WnjdsNhfFDBvxqA6VVGw",
       method: "post",
       data: {
-        contents: [{ parts: [{ text: Prompt + input }] }],
+        contents: [{ parts: [{ text: Prompt + input }] }], 
       },
     });
     const aiResponse = response.data.candidates[0].content.parts[0].text;
