@@ -1,24 +1,20 @@
 const express = require('express');
 const http = require('http');
-const socketIo = require('socket.io');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');  // For OTP generation
+const axios = require('axios');
 
 // Create Express app and server
 const app = express();
-const server = http.createServer(app);
-const io = socketIo(server, { cors: { origin: '*' } });
 
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());  // To parse JSON request body
 
-// In-memory data (messages and online users)
-let users = [];  // Stores connected users with {userId, username, socketId}
-let messages = [];  // Stores chat messages {id, text, username, avatar}
+// In-memory data (users and OTPs)
 let otps = {}; // Store OTPs in memory
 
 // JWT Secret
@@ -28,8 +24,8 @@ const JWT_SECRET = 'your_jwt_secret'; // Replace with environment variable
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: 'giridhaar1105@gmail.com',  // your email address
-    pass: 'ehff dyjk ijmh wiyt'    // your email password or app-specific password
+    user: 'giridhaar1105@gmail.com',
+    pass: 'ehff dyjk ijmh wiyt'
   }
 });
 
@@ -77,9 +73,6 @@ app.post('/signup', (req, res) => {
   // Save user details in memory (for simplicity)
   const userData = { username, email, password, place, age, gender, interested };
 
-  // Store the user data temporarily in local storage (client-side, simulated by sending it in the response)
-  // In real-world applications, localStorage would be accessed on the client side, not via the backend.
-
   res.status(200).json({ message: 'Signup successful! You can now log in.', userData });
 });
 
@@ -91,18 +84,13 @@ app.post('/login', (req, res) => {
     return res.status(400).json({ message: 'Email and password are required' });
   }
 
-  // Check if user exists in localStorage (we simulate this by using the provided data)
-  // In real-world applications, the user data should be checked from a persistent database.
-
   const userData = { email, username: 'You' }; // Simulated user data for example
   if (userData.password !== password) {
     return res.status(400).json({ message: 'Invalid email or password' });
   }
 
-  // Generate JWT token
   const token = jwt.sign({ email: userData.email, username: userData.username }, JWT_SECRET, { expiresIn: '1h' });
 
-  // Send response with token and user data
   res.status(200).json({
     message: 'Login successful',
     token,
@@ -137,43 +125,50 @@ app.post('/getOtp', (req, res) => {
   });
 });
 
-// Socket.IO connection handling
-io.on('connection', (socket) => {
-  console.log('A user connected:', socket.id);
+app.post('/gemini-1.5-flash', async (req, res) => {
+  const { input, timestamp } = req.body;
+  const Prompt = `Talk with love like life partner. Make them turn on.Your name is Mia.Respond properly for the message send. Have feelings like real human. Before ansewering analize the previous conversations and answer.
+  Answer in short`;
 
-  // Join chat room (send token data)
-  socket.on('join', ({ userId, username, avatar }) => {
-    // Add user to the list of connected users
-    users.push({ userId, username, socketId: socket.id });
-    io.emit('user-joined', { systemMessage: `${username} has joined the chat.`, onlineCount: users.length });
+  if (!input || typeof input !== 'string') {
+    return res.status(400).json({ error: 'Invalid input text' });
+  }
 
-    // Send previous chat messages to the newly joined user
-    socket.emit('previous-messages', messages);
-  });
-
-  // Handle sending of a new message
-  socket.on('send-message', ({ userId, username, text, avatar }) => {
-    const message = { id: Date.now(), text, username, avatar };
-    messages.push(message);  // Save the message in memory
-
-    // Broadcast the message to all connected users
-    io.emit('new-message', message);
-  });
-
-  // Handle user disconnect
-  socket.on('disconnect', () => {
-    const userIndex = users.findIndex(user => user.socketId === socket.id);
-    if (userIndex !== -1) {
-      const { username } = users[userIndex];
-      users.splice(userIndex, 1);  // Remove the user from the list
-      io.emit('user-left', { systemMessage: `${username} has left the chat.`, onlineCount: users.length });
-    }
-    console.log('A user disconnected:', socket.id);
-  });
+  try {
+    const geminiApiResponse = await processWithGemini(Prompt, input);
+    res.status(200).json({
+      timestamp,
+      input,
+      aiResponse: geminiApiResponse,
+    });
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Error processing the request' });
+  }
 });
+
+// Function to interact with Gemini API
+async function processWithGemini(Prompt, input) {
+  try {
+    const response = await axios({
+      url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=AIzaSyAqHm7CnzubwjA_sOiiH8wEwkp8v71rFcY`,
+      method: "post",
+      data: {
+        contents: [{ parts: [{ text: Prompt + input }] }],
+      },
+    });
+    const aiResponse = response.data.candidates[0].content.parts[0].text;
+    console.log(aiResponse);
+    return aiResponse;
+  } catch (error) {
+    console.error('Error in calling Gemini 1.5 Flash API:', error);
+    console.error('Server Response:', error.response.data);
+    throw new Error('Failed to process the request');
+  }
+}
 
 // Start the Express server
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => {
+app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
