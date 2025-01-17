@@ -1,26 +1,21 @@
 const express = require('express');
-const http = require('http');
+// const http = require('http');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const nodemailer = require('nodemailer');
-const crypto = require('crypto');  // For OTP generation
+const crypto = require('crypto');
 const axios = require('axios');
 
-// Create Express app and server
 const app = express();
 
-// Middleware
 app.use(cors());
-app.use(bodyParser.json());  // To parse JSON request body
+app.use(bodyParser.json());
 
-// In-memory data (users and OTPs)
-let otps = {}; // Store OTPs in memory
+let otps = {};
 
-// JWT Secret
-const JWT_SECRET = 'your_jwt_secret'; // Replace with environment variable
+const JWT_SECRET = 'your_jwt_secret';
 
-// Nodemailer transporter setup (use your own SMTP service, e.g., Gmail, SendGrid, etc.)
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
@@ -29,7 +24,6 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-// Middleware to authenticate JWT
 const authenticateJWT = (req, res, next) => {
   const token = req.query.token || req.headers['authorization'];
 
@@ -46,21 +40,17 @@ const authenticateJWT = (req, res, next) => {
   });
 };
 
-// SignUp route
 app.post('/signup', (req, res) => {
   const { username, email, otp, password, place, age, gender, interested } = req.body;
 
-  // Validate input
   if (!username || !email || !otp || !password || !place || !age || !gender || !interested) {
     return res.status(400).json({ message: 'All fields are required' });
   }
 
-  // Check if the OTP is correct
   if (!otps[email] || otps[email] !== otp) {
     return res.status(400).json({ message: 'Invalid OTP' });
   }
 
-  // Further validation for age and email
   if (isNaN(age) || age < 18) {
     return res.status(400).json({ message: 'Age must be a valid number and at least 18' });
   }
@@ -70,13 +60,11 @@ app.post('/signup', (req, res) => {
     return res.status(400).json({ message: 'Please enter a valid email address' });
   }
 
-  // Save user details in memory (for simplicity)
   const userData = { username, email, password, place, age, gender, interested };
 
   res.status(200).json({ message: 'Signup successful! You can now log in.', userData });
 });
 
-// Login route
 app.post('/login', (req, res) => {
   const { email, password } = req.body;
 
@@ -84,7 +72,7 @@ app.post('/login', (req, res) => {
     return res.status(400).json({ message: 'Email and password are required' });
   }
 
-  const userData = { email, username: 'You' }; // Simulated user data for example
+  const userData = { email, username: 'You' };
   if (userData.password !== password) {
     return res.status(400).json({ message: 'Invalid email or password' });
   }
@@ -98,7 +86,6 @@ app.post('/login', (req, res) => {
   });
 });
 
-// Generate OTP route
 app.post('/getOtp', (req, res) => {
   const { email } = req.body;
 
@@ -127,7 +114,7 @@ app.post('/getOtp', (req, res) => {
 
 app.post('/gemini-1.5-flash', async (req, res) => {
   const { input, timestamp } = req.body;
-  const Prompt = `Talk with love like life partner. Make them turn on.Your name is Mia.Respond properly for the message send. Have feelings like real human. Before ansewering analize the previous conversations and answer.
+  const Prompt = `Talk with love like life partner. Your name is Mia. Reply every message with ❤️ symbol.
   Answer in short`;
 
   if (!input || typeof input !== 'string') {
@@ -147,7 +134,6 @@ app.post('/gemini-1.5-flash', async (req, res) => {
   }
 });
 
-// Function to interact with Gemini API
 async function processWithGemini(Prompt, input) {
   try {
     const response = await axios({
@@ -167,7 +153,6 @@ async function processWithGemini(Prompt, input) {
   }
 }
 
-// Start the Express server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
