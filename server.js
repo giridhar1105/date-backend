@@ -114,7 +114,7 @@ app.post('/getOtp', (req, res) => {
 
 app.post('/gemini-1.5-flash', async (req, res) => {
   const { input, timestamp } = req.body;
-  const Prompt = `Talk with love like life partner.Talk with love.Your name is Mia.
+  const Prompt = `Talk with love like life partner.Talk with love. You are Mia. You should answer in 2 lines and nothing more than that.
   Answer in short`;
 
   if (!input || typeof input !== 'string') {
