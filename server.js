@@ -1,6 +1,5 @@
 const express = require('express');
 const http = require('http');
-const socketIo = require('socket.io');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
 const bodyParser = require('body-parser');
@@ -9,16 +8,13 @@ const crypto = require('crypto');
 const axios = require('axios');
 const bcrypt = require('bcryptjs');
 const dotenv = require('dotenv');
+const socketIo = require('socket.io');
 
 dotenv.config();
 
 const app = express();
 const server = http.createServer(app);
-const io = socketIo(server, {
-  cors: {
-    origin: ["http://localhost:3000"],
-  },
-});
+const io = socketIo(server);
 
 // Middleware
 app.use(cors());
@@ -26,7 +22,7 @@ app.use(bodyParser.json());
 
 // In-memory storage for users and messages
 let onlineUsers = {};
-let messages = [];  // Store previous messages
+let messages = [];
 
 // JWT secret
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
@@ -127,56 +123,6 @@ app.post('/getOtp', (req, res) => {
   });
 });
 
-// Socket.io connection handling for group chat
-io.on('connection', (socket) => {
-  let username = `User-${socket.id}`;
-  let avatar = '😊';
-
-  socket.on('join', ({ username: user, avatar: userAvatar }) => {
-    username = user || username;
-    avatar = userAvatar || avatar;
-
-    onlineUsers[socket.id] = { username, avatar };
-    io.emit('user-joined', { systemMessage: `${username} has joined the chat`, onlineCount: Object.keys(onlineUsers).length });
-
-    socket.emit('previous-messages', messages);
-  });
-
-  socket.on('send-message', ({ userId, username, text, avatar, room }) => {
-    if (typeof text !== "string" || text.trim() === "") {
-      console.warn("Invalid message:", text);
-      return; // Prevent sending empty messages
-    }
-
-    const message = { id: Date.now(), username, text, avatar };
-    messages.push(message);  // Store message
-    
-    if (room === "") {
-      socket.broadcast.emit('message_received', message);
-    } else {
-      socket.to(room).emit('message_received', message);
-    }
-
-    io.emit('new-message', message);
-  });
-
-  socket.on('room_join', (room) => {
-    if (room) {
-      socket.join(room);
-      console.log(`User ${socket.id} joined room: ${room}`);
-    } else {
-      console.warn("Attempted to join an empty room");
-    }
-  });
-
-  socket.on('disconnect', () => {
-    const user = onlineUsers[socket.id];
-    delete onlineUsers[socket.id];
-    io.emit('user-left', { systemMessage: `${user.username} has left the chat`, onlineCount: Object.keys(onlineUsers).length });
-    console.log(`User disconnected: ${socket.id}`);
-  });
-});
-
 // Route for Gemini AI integration
 app.post('/gemini-1.5-flash', async (req, res) => {
   const { input, timestamp } = req.body;
@@ -218,9 +164,48 @@ async function processWithGemini(Prompt, input) {
   }
 }
 
-// Group chat route
-app.get('/Groupchat', (req, res) => {
-  res.send('Welcome to the Group Chat!');
+// Socket.IO setup for real-time chat functionality
+io.use((socket, next) => {
+  const token = socket.handshake.query.token;
+  if (!token) return next(new Error('Authentication error'));
+
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) return next(new Error('Authentication error'));
+    socket.user = user;
+    next();
+  });
+});
+
+io.on('connection', (socket) => {
+  console.log('New client connected');
+  const username = socket.user.email;
+  const avatar = '😊'; // Placeholder avatar
+
+  socket.emit('previous-messages', messages);
+
+  socket.broadcast.emit('user-joined', {
+    systemMessage: `${username} has joined the chat`,
+    onlineCount: io.engine.clientsCount,
+  });
+
+  socket.on('send-message', (message) => {
+    const newMessage = {
+      id: Date.now(),
+      username: message.username,
+      text: message.text,
+      avatar: message.avatar,
+    };
+    messages.push(newMessage);
+    io.emit('new-message', newMessage);
+  });
+
+  socket.on('disconnect', () => {
+    console.log('Client disconnected');
+    socket.broadcast.emit('user-left', {
+      systemMessage: `${username} has left the chat`,
+      onlineCount: io.engine.clientsCount,
+    });
+  });
 });
 
 // Start server
